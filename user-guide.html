@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Guide - QR Code Mapper</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .guide-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+        h2, h3 {
+            color: #005a9c;
+            border-bottom: 2px solid var(--medium-gray);
+            padding-bottom: 5px;
+            margin-top: 1.5em;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a.back-link {
+            display: inline-block;
+            margin-top: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        a.back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="guide-container">
+        <h1>QR Code Mapper User Guide</h1>
+        <p>Welcome to <strong>QR Code Mapper</strong>! This guide will walk you through the simple process of scanning shipping labels to create a digital record of QR codes and addresses.</p>
+
+        <h2>Getting Started</h2>
+        <ol>
+            <li><strong>Open the App:</strong> When you open the QR Code Mapper, you'll see a clean and simple interface.</li>
+            <li><strong>Start a New Record:</strong> To begin, tap the <strong>"➕ Start New Record"</strong> button. This will open the scanner.</li>
+        </ol>
+
+        <h2>Scanning the Address</h2>
+        <p>This is the most important step for accurate results. The app is designed to automatically capture the address when the image is clear.</p>
+        
+        <h3>How to get a good scan:</h3>
+        <ul>
+            <li><strong>Position the Label:</strong> Place the shipping label on a flat, well-lit surface. Avoid shadows and glare on the address portion of the label.</li>
+            <li><strong>Align the Camera:</strong> Hold your phone steady and position the camera so the name and address on the label are inside the dashed rectangle (the overlay) on your screen.</li>
+            <li><strong>Focus on the Text:</strong> The app is constantly checking the clarity of the image.
+                <ul>
+                    <li>When the overlay border is <strong>red</strong>, it means the text is blurry. Try moving your phone slightly closer or further away from the label to find the best focus distance.</li>
+                    <li>When the overlay border turns <strong>green</strong>, it means the text is sharp and in focus! Hold your phone as still as possible. The app will automatically take a picture.</li>
+                </ul>
+            </li>
+        </ul>
+
+        <h3>What happens if the scan is not clear?</h3>
+        <p>Sometimes, due to lighting, print quality, or an unsteady hand, the app might not be confident about the scanned text. If this happens, you will see a <strong>"Low Scan Quality"</strong> message.</p>
+        <ul>
+            <li>You will be shown a preview of the text that the app was able to read.</li>
+            <li>You have two options:
+                <ul>
+                    <li><strong>Retry:</strong> It's highly recommended to tap the <strong>"Retry"</strong> button. This will take you back to the scanner so you can try again to get a clearer picture.</li>
+                    <li><strong>Accept & Continue:</strong> If the preview looks mostly correct and you're confident you can fix it manually later, you can tap <strong>"Accept & Continue"</strong>.</li>
+                </ul>
+            </li>
+        </ul>
+        
+
+        <h2>Scanning the QR Code</h2>
+        <ol>
+            <li><strong>Align the QR Code:</strong> After a successful address scan, the app will prompt you to scan the QR code. Position your camera so the QR code is within the dashed overlay.</li>
+            <li><strong>Automatic Capture:</strong> The app will automatically detect and capture the QR code.</li>
+        </ol>
+
+        <h2>Validate and Save</h2>
+        <ol>
+            <li><strong>Review the Information:</strong> The app will show you the captured QR code URL and the address.</li>
+            <li><strong>Correct if Needed:</strong> You can edit the text in the "Name & Address" box to make any corrections.</li>
+            <li><strong>Save the Record:</strong> Once you are happy with the information, tap the <strong>"Save Record"</strong> button.</li>
+        </ol>
+
+        <h2>Managing Your Records</h2>
+        <ul>
+            <li>All your saved records will appear in a table on the main screen.</li>
+            <li><strong>Copy Table:</strong> You can copy the entire table to your clipboard by tapping the <strong>"Copy Table"</strong> button.</li>
+            <li><strong>Delete a Record:</strong> To delete a single entry, tap the trash can icon (🗑️) in that record's row.</li>
+            <li><strong>Delete All:</strong> To clear all records, click the small <strong>"Delete All"</strong> link at the bottom-right of the table.</li>
+        </ul>
+        
+        <a href="index.html" class="back-link">← Back to App</a>
+    </div>
+
+</body>
+</html>

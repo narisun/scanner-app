@@ -27,7 +27,12 @@ body {
 .main-container { max-width: 900px; margin: 0 auto; }
 h1 { text-align: center; color: #005a9c; margin-block: 0.5em; }
 .main-controls { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 25px; }
-.table-actions { text-align: center; margin-top: 15px; }
+.table-actions { 
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 15px; 
+}
 
 /* Buttons */
 button { padding: 10px 18px; font-size: 1rem; font-weight: 600; color: #fff; background-color: var(--primary-color); border: none; border-radius: var(--border-radius); cursor: pointer; transition: background-color 0.2s; margin: 5px; }
@@ -37,13 +42,15 @@ button.secondary-btn:hover { background-color: var(--secondary-hover); }
 #start-new-record-button { background-color: var(--success-color); width: 220px; }
 #start-new-record-button:hover { background-color: var(--success-hover); }
 
-/* Toggle Switch */
-.toggle-switch { display: flex; align-items: center; gap: 8px; }
-.toggle-switch label { color: var(--dark-gray); font-weight: 600; user-select: none; }
-.toggle-switch input { position: relative; width: 44px; height: 24px; appearance: none; background: #ccc; border-radius: 12px; transition: 0.2s; cursor: pointer; }
-.toggle-switch input::before { content: ""; position: absolute; left: 2px; top: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.2s; }
-.toggle-switch input:checked { background: var(--success-color); }
-.toggle-switch input:checked::before { transform: translateX(20px); }
+#delete-all-link {
+    font-size: 0.8rem;
+    color: var(--danger-color);
+    text-decoration: none;
+    margin-right: 5px;
+}
+#delete-all-link:hover {
+    text-decoration: underline;
+}
 
 /* Table Styles */
 #data-section { margin-top: 20px; }

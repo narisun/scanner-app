@@ -18,7 +18,7 @@ window.addEventListener('load', () => {
             allRecords: [],
             currentRecord: {},
             captureState: 'idle',
-            autoCaptureEnabled: false,
+            autoCaptureEnabled: true,
             stream: null,
             scanInterval: null,
             tesseractWorker: null,
@@ -26,7 +26,6 @@ window.addEventListener('load', () => {
 
         ui: {
             startBtn: document.getElementById('start-new-record-button'),
-            autoCaptureToggle: document.getElementById('auto-capture-toggle'),
             copyBtn: document.getElementById('copy-table-button'),
             tableBody: document.querySelector('#data-table tbody'),
             modal: document.getElementById('capture-modal'),
@@ -47,6 +46,7 @@ window.addEventListener('load', () => {
             confidenceTextPreview: document.getElementById('confidence-text-preview'),
             retryScanButton: document.getElementById('retry-scan-button'),
             acceptScanButton: document.getElementById('accept-scan-button'),
+            deleteAllLink: document.getElementById('delete-all-link'),
         },
 
         async init() {
@@ -63,13 +63,16 @@ window.addEventListener('load', () => {
 
         bindEvents() {
             this.ui.startBtn.addEventListener('click', () => this.workflows.startNewRecord());
-            this.ui.autoCaptureToggle.addEventListener('change', (e) => this.state.autoCaptureEnabled = e.target.checked);
             this.ui.cancelBtn.addEventListener('click', () => this.workflows.closeModal());
             this.ui.captureBtn.addEventListener('click', () => this.workflows.handleManualAddressCapture());
             this.ui.saveBtn.addEventListener('click', () => this.store.saveRecord());
             this.ui.copyBtn.addEventListener('click', () => this.utils.copyTableToClipboard());
             this.ui.retryScanButton.addEventListener('click', () => this.workflows.handleRetry());
             this.ui.acceptScanButton.addEventListener('click', () => this.workflows.handleAccept());
+            this.ui.deleteAllLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.store.deleteAllRecords();
+            });
             this.ui.tableBody.addEventListener('click', (e) => {
                 if (e.target.classList.contains('delete-icon')) {
                     this.store.deleteRecord(parseInt(e.target.dataset.index, 10));
@@ -256,6 +259,13 @@ window.addEventListener('load', () => {
                     this.renderTable();
                 }
             },
+            deleteAllRecords() {
+                if (confirm('Are you sure you want to delete all records?')) {
+                    App.state.allRecords = [];
+                    this.save();
+                    this.renderTable();
+                }
+            },
             handleTableEdit(e) {
                 if (e.target.classList.contains('editable-cell')) {
                     const index = parseInt(e.target.dataset.index, 10);
@@ -352,10 +362,24 @@ window.addEventListener('load', () => {
                 return canvas.toDataURL('image/jpeg', 0.7);
             },
             parseUSAddress(text) {
-                const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 2);
+                // 1. Filter out invalid characters and lines with only 1 character
+                const lines = text.split('\n')
+                    .map(line => line.replace(/[^a-zA-Z0-9\s\-#.,\/]/g, '').trim())
+                    .filter(line => line.length > 1);
+
                 if (lines.length === 0) return { name: '', address: 'Could not read.' };
-                if (/^\d/.test(lines[0])) return { name: '', address: lines.join('\n') };
-                return { name: lines[0] || '', address: lines.slice(1).join('\n') || '' };
+                
+                // 2. Simple heuristic: if the first line starts with a digit, assume it's all address.
+                // This is not perfect but covers many cases like "123 Main St" being the first line.
+                if (/^\d/.test(lines[0])) {
+                    return { name: '', address: lines.join('\n') };
+                }
+
+                // 3. Otherwise, assume the first line is the name and the rest is the address.
+                return { 
+                    name: lines[0] || '', 
+                    address: lines.slice(1).join('\n') || '' 
+                };
             },
             copyTableToClipboard() {
                 if (App.state.allRecords.length === 0) return alert("Table is empty.");

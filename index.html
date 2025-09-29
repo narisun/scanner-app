@@ -3,19 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Label Mapper</title>
+    <title>QR Code Mapper</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <div id="main-container">
-        <h1>Label Mapper</h1>
+        <h1>QR Code Mapper</h1>
         <div class="main-controls">
             <button id="start-new-record-button">➕ Start New Record</button>
-            <div class="toggle-switch">
-                <input type="checkbox" id="auto-capture-toggle" name="auto-capture">
-                <label for="auto-capture-toggle">Auto-Capture Address</label>
-            </div>
+            <a href="user-guide.html" style="margin-top: 10px;">User Guide</a>
         </div>
 
         <div id="data-section">
@@ -33,6 +30,7 @@
             </div>
             <div class="table-actions">
                  <button id="copy-table-button">Copy Table</button>
+                 <a href="#" id="delete-all-link">Delete All</a>
             </div>
         </div>
     </div>
