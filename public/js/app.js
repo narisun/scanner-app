@@ -1,27 +1,17 @@
-window.addEventListener('load', () => {
-    
+window.addEventListener('DOMContentLoaded', () => {
     const App = {
         config: {
-            localStorageKey: 'labelMappings',
+            apiUrl: '/api', // Relative path because it's served by the same Node server
             sharpnessThreshold: 40,
             stabilityThreshold: 4, 
             ocrConfidenceThreshold: 65,
             states: {
-                IDLE: 'idle',
-                SCANNING_ADDRESS: 'scanning_address',
-                SCANNING_QR: 'scanning_qr',
-                VALIDATING: 'validating'
+                IDLE: 'idle', SCANNING_ADDRESS: 'scanning_address', SCANNING_QR: 'scanning_qr', VALIDATING: 'validating'
             }
         },
 
         state: {
-            allRecords: [],
-            currentRecord: {},
-            captureState: 'idle',
-            autoCaptureEnabled: true,
-            stream: null,
-            scanInterval: null,
-            tesseractWorker: null,
+            allRecords: [], currentRecord: {}, captureState: 'idle', autoCaptureEnabled: true, stream: null, scanInterval: null, tesseractWorker: null,
         },
 
         ui: {
@@ -47,21 +37,85 @@ window.addEventListener('load', () => {
             retryScanButton: document.getElementById('retry-scan-button'),
             acceptScanButton: document.getElementById('accept-scan-button'),
             deleteAllLink: document.getElementById('delete-all-link'),
+            loginForm: document.getElementById('login-form'),
+            logoutLink: document.getElementById('logout-link')
         },
 
         async init() {
-            this.ui.startBtn.disabled = true;
-            this.ui.startBtn.textContent = 'Loading Engine...';
-            this.store.load();
             this.bindEvents();
-            this.state.tesseractWorker = await Tesseract.createWorker();
-            await this.state.tesseractWorker.loadLanguage('eng');
-            await this.state.tesseractWorker.initialize('eng');
-            this.ui.startBtn.disabled = false;
-            this.ui.startBtn.textContent = '➕ Start New Record';
+            if (this.auth.token) {
+                document.getElementById('login-container').classList.add('hidden');
+                document.getElementById('main-container').classList.remove('hidden');
+                await this.loadEnginesAndData();
+            }
+        },
+        
+        async loadEnginesAndData() {
+            try {
+                await this.store.load();
+                if(!this.state.tesseractWorker) {
+                    this.state.tesseractWorker = await Tesseract.createWorker('eng');
+                }
+                this.ui.startBtn.disabled = false;
+                this.ui.startBtn.textContent = '➕ Start New Record';
+            } catch (error) {
+                console.error("Initialization failed:", error);
+            }
+        },
+
+        auth: {
+            token: sessionStorage.getItem('jwt_token') || null,
+            
+            async login(username, password) {
+                try {
+                    const res = await fetch(`${App.config.apiUrl}/auth/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+                    const data = await res.json();
+                    
+                    if (!res.ok) throw new Error(data.error);
+                    
+                    this.token = data.token;
+                    sessionStorage.setItem('jwt_token', this.token);
+                    
+                    document.getElementById('login-container').classList.add('hidden');
+                    document.getElementById('main-container').classList.remove('hidden');
+                    await App.loadEnginesAndData();
+                } catch (err) {
+                    const errorEl = document.getElementById('login-error');
+                    errorEl.textContent = err.message;
+                    errorEl.classList.remove('hidden');
+                }
+            },
+            
+            logout() {
+                this.token = null;
+                sessionStorage.removeItem('jwt_token');
+                document.getElementById('login-container').classList.remove('hidden');
+                document.getElementById('main-container').classList.add('hidden');
+                document.getElementById('login-error').classList.add('hidden');
+                App.ui.loginForm.reset();
+            },
+
+            getHeaders() {
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                };
+            }
         },
 
         bindEvents() {
+            this.ui.loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.auth.login(document.getElementById('username').value, document.getElementById('password').value);
+            });
+            this.ui.logoutLink.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.auth.logout();
+            });
             this.ui.startBtn.addEventListener('click', () => this.workflows.startNewRecord());
             this.ui.cancelBtn.addEventListener('click', () => this.workflows.closeModal());
             this.ui.captureBtn.addEventListener('click', () => this.workflows.handleManualAddressCapture());
@@ -74,11 +128,12 @@ window.addEventListener('load', () => {
                 this.store.deleteAllRecords();
             });
             this.ui.tableBody.addEventListener('click', (e) => {
-                if (e.target.classList.contains('delete-icon')) {
-                    this.store.deleteRecord(parseInt(e.target.dataset.index, 10));
+                const target = e.target.closest('.delete-icon');
+                if (target) {
+                    const id = Number(target.dataset.id);
+                    this.store.deleteRecord(id);
                 }
             });
-            this.ui.tableBody.addEventListener('blur', (e) => this.store.handleTableEdit(e), true);
         },
 
         workflows: {
@@ -87,13 +142,11 @@ window.addEventListener('load', () => {
                 App.ui.modal.classList.remove('hidden');
                 App.scanner.startCamera(App.config.states.SCANNING_ADDRESS);
             },
-
             closeModal() {
                 App.scanner.stopCamera();
                 App.ui.modal.classList.add('hidden');
                 App.state.captureState = App.config.states.IDLE;
             },
-            
             async handleManualAddressCapture() {
                 if (App.state.scanInterval) clearInterval(App.state.scanInterval);
                 App.ui.loader.classList.remove('hidden');
@@ -118,17 +171,16 @@ window.addEventListener('load', () => {
                         App.scanner.startCamera(App.config.states.SCANNING_QR);
                     }
                 } catch (error) {
+                    console.error("OCR Error:", error);
                     alert('Error during OCR processing. Please try again.');
                     this.handleRetry();
                 }
             },
-            
             handleRetry() {
                 App.ui.confidenceModal.classList.add('hidden');
                 App.state.currentRecord.ocrResult = null;
                 App.scanner.startCamera(App.config.states.SCANNING_ADDRESS);
             },
-            
             handleAccept() {
                 App.ui.confidenceModal.classList.add('hidden');
                 const { name, address } = App.utils.parseUSAddress(App.state.currentRecord.ocrResult.text);
@@ -137,7 +189,6 @@ window.addEventListener('load', () => {
                 App.state.currentRecord.ocrResult = null;
                 App.scanner.startCamera(App.config.states.SCANNING_QR);
             },
-
             showValidation() {
                 App.state.captureState = App.config.states.VALIDATING;
                 App.scanner.stopCamera();
@@ -161,6 +212,7 @@ window.addEventListener('load', () => {
                         App.ui.video.srcObject = App.state.stream;
                         await App.ui.video.play();
                     } catch (err) {
+                        console.error("Camera access denied:", err);
                         alert("Could not access camera. Please grant permission.");
                         return App.workflows.closeModal();
                     }
@@ -174,7 +226,6 @@ window.addEventListener('load', () => {
                     this.startQRScan();
                 }
             },
-
             stopCamera() {
                 if (App.state.stream) {
                     App.state.stream.getTracks().forEach(track => track.stop());
@@ -185,18 +236,15 @@ window.addEventListener('load', () => {
                 App.state.stream = null;
                 App.state.scanInterval = null;
             },
-            
             startAddressScan() {
                 App.utils.updateOverlay('address');
                 App.ui.captureBtn.classList.remove('hidden');
                 App.state.stabilityCounter = 0;
                 if (App.state.autoCaptureEnabled) App.ui.statusMessage.textContent = 'Looking for clear text...';
 
-                App.state.scanInterval = setInterval(async () => {
+                App.state.scanInterval = setInterval(() => {
                     if (!App.state.stream || App.ui.video.paused) return;
-                    
                     const sharpness = App.utils.calculateSharpness();
-                    
                     if (sharpness > App.config.sharpnessThreshold) {
                         App.ui.overlay.classList.add('in-focus');
                         App.state.stabilityCounter++;
@@ -209,7 +257,6 @@ window.addEventListener('load', () => {
                     }
                 }, 200);
             },
-            
             startQRScan() {
                 App.utils.updateOverlay('qr');
                 App.ui.captureBtn.classList.add('hidden');
@@ -222,9 +269,8 @@ window.addEventListener('load', () => {
                     const code = jsQR(imageData.data, imageData.width, imageData.height);
 
                     if (code) {
-                        // ** THE FIX IS HERE **
                         App.state.currentRecord.qrUrl = code.data;
-                        App.state.currentRecord.qrImageSrc = App.utils.captureSnippet(); // Capture the QR image
+                        App.state.currentRecord.qrImageSrc = App.utils.captureSnippet();
                         App.workflows.showValidation();
                     }
                 }, 200);
@@ -232,82 +278,107 @@ window.addEventListener('load', () => {
         },
         
         store: {
-            load() {
-                const stored = JSON.parse(localStorage.getItem(App.config.localStorageKey));
-                if (stored && stored.records) {
-                    App.state.allRecords = stored.records;
+            async load() {
+                try {
+                    const res = await fetch(`${App.config.apiUrl}/scans`, { headers: App.auth.getHeaders() });
+                    if (res.status === 401 || res.status === 403) return App.auth.logout();
+                    App.state.allRecords = await res.json();
                     this.renderTable();
+                } catch (err) {
+                    console.error("Failed to load records:", err);
                 }
             },
-            save() {
-                localStorage.setItem(App.config.localStorageKey, JSON.stringify({ records: App.state.allRecords }));
-            },
-            saveRecord() {
+            async saveRecord() {
                 const [name, ...addressParts] = App.ui.nameAddressInput.value.split('\n');
-                App.state.currentRecord.name = name.trim();
-                App.state.currentRecord.address = addressParts.join('\n').trim();
-                App.state.currentRecord.qrUrl = App.ui.qrUrlInput.value.trim();
-                App.state.allRecords.push(App.state.currentRecord);
-                this.save();
-                this.renderTable();
-                App.workflows.closeModal();
-            },
-            deleteRecord(index) {
-                if (confirm('Are you sure you want to delete this record?')) {
-                    App.state.allRecords.splice(index, 1);
-                    this.save();
-                    this.renderTable();
+                const rawUrl = App.ui.qrUrlInput.value.trim();
+                const generatedId = rawUrl.split('/').pop() || `QR-${Date.now()}`; 
+
+                const payload = {
+                    qr_code_id: generatedId,
+                    qr_url: rawUrl,
+                    address_text: `${name.trim()}\n${addressParts.join('\n').trim()}`,
+                    qr_image_src: App.state.currentRecord.qrImageSrc,
+                    address_image_src: App.state.currentRecord.addressImageSrc
+                };
+
+                try {
+                    const res = await fetch(`${App.config.apiUrl}/scans`, {
+                        method: 'POST',
+                        headers: App.auth.getHeaders(),
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (res.ok) {
+                        await this.load(); 
+                        App.workflows.closeModal();
+                    }
+                } catch (err) {
+                    console.error("Failed to save:", err);
+                    alert("Error saving to database.");
                 }
             },
-            deleteAllRecords() {
-                if (confirm('Are you sure you want to delete all records?')) {
-                    App.state.allRecords = [];
-                    this.save();
-                    this.renderTable();
+            async deleteRecord(id) {
+                if (!confirm('Are you sure you want to delete this record?')) return;
+                try {
+                    await fetch(`${App.config.apiUrl}/scans/${id}`, {
+                        method: 'DELETE',
+                        headers: App.auth.getHeaders()
+                    });
+                    await this.load();
+                } catch (err) {
+                    console.error("Failed to delete:", err);
                 }
             },
-            handleTableEdit(e) {
-                if (e.target.classList.contains('editable-cell')) {
-                    const index = parseInt(e.target.dataset.index, 10);
-                    const content = e.target.innerHTML.replace(/<br\s*[\/]?>/gi, "\n"); 
-                    const [name, ...addressParts] = content.split('\n');
-                    App.state.allRecords[index].name = name.trim();
-                    App.state.allRecords[index].address = addressParts.join('\n').trim();
-                    this.save();
+            async deleteAllRecords() {
+                if (!confirm('Are you sure you want to delete all records?')) return;
+                try {
+                    await fetch(`${App.config.apiUrl}/scans`, {
+                        method: 'DELETE',
+                        headers: App.auth.getHeaders()
+                    });
+                    await this.load();
+                } catch (err) {
+                    console.error("Failed to clear data:", err);
                 }
             },
             renderTable() {
                 App.ui.tableBody.innerHTML = '';
-                App.state.allRecords.forEach((record, index) => {
+                App.state.allRecords.forEach((record) => {
                     const row = App.ui.tableBody.insertRow();
+                    const safeUrl = App.utils.sanitizeHTML(record.qr_url || '#');
+                    const displayUrl = App.utils.sanitizeHTML(record.qr_url || 'N/A');
+                    const safeAddress = App.utils.sanitizeHTML(record.address_text || '').replace(/\n/g, '<br>');
+                    
                     row.innerHTML = `
-                        <td><a href="${record.qrUrl || '#'}" target="_blank">${record.qrUrl || 'N/A'}</a></td>
-                        <td class="editable-cell" contenteditable="true" data-index="${index}">${record.name}<br>${record.address.replace(/\n/g, '<br>')}</td>
                         <td>
                             <div class="image-cell">
-                                <img src="${record.addressImageSrc || ''}" alt="Address Snippet">
-                                <img src="${record.qrImageSrc || ''}" alt="QR Code Snippet">
+                                ${record.qr_image_src ? `<img src="${App.utils.sanitizeHTML(record.qr_image_src)}" alt="QR Code Snippet">` : ''}
                             </div>
                         </td>
-                        <td><span class="delete-icon" data-index="${index}">🗑️</span></td>
+                        <td>${safeAddress}</td>
+                        <td><a href="${safeUrl}" target="_blank" rel="noopener noreferrer">${displayUrl}</a></td>
+                        <td><span class="delete-icon" data-id="${record.id}" title="Delete Record">🗑️</span></td>
                     `;
                 });
             }
         },
 
         utils: {
+            sanitizeHTML(str) {
+                const temp = document.createElement('div');
+                temp.textContent = str;
+                return temp.innerHTML;
+            },
             updateOverlay(type) {
                 const { overlay, statusMessage } = App.ui;
                 switch (type) {
                     case 'address':
                         statusMessage.textContent = '1. Scan Name & Address';
-                        overlay.style.width = '90%';
-                        overlay.style.height = '40%';
+                        overlay.style.width = '90%'; overlay.style.height = '40%';
                         break;
                     case 'qr':
                         statusMessage.textContent = '2. Scan QR Code';
-                        overlay.style.width = '65%';
-                        overlay.style.height = '50%';
+                        overlay.style.width = '65%'; overlay.style.height = '50%';
                         break;
                 }
             },
@@ -359,27 +430,13 @@ window.addEventListener('load', () => {
             },
             captureSnippet() {
                 const { canvas } = this.drawSnippetToCanvas();
-                return canvas.toDataURL('image/jpeg', 0.7);
+                return canvas.toDataURL('image/jpeg', 0.6); 
             },
             parseUSAddress(text) {
-                // 1. Filter out invalid characters and lines with only 1 character
-                const lines = text.split('\n')
-                    .map(line => line.replace(/[^a-zA-Z0-9\s\-#.,\/]/g, '').trim())
-                    .filter(line => line.length > 1);
-
+                const lines = text.split('\n').map(line => line.replace(/[^a-zA-Z0-9\s\-#.,\/]/g, '').trim()).filter(line => line.length > 1);
                 if (lines.length === 0) return { name: '', address: 'Could not read.' };
-                
-                // 2. Simple heuristic: if the first line starts with a digit, assume it's all address.
-                // This is not perfect but covers many cases like "123 Main St" being the first line.
-                if (/^\d/.test(lines[0])) {
-                    return { name: '', address: lines.join('\n') };
-                }
-
-                // 3. Otherwise, assume the first line is the name and the rest is the address.
-                return { 
-                    name: lines[0] || '', 
-                    address: lines.slice(1).join('\n') || '' 
-                };
+                if (/^\d/.test(lines[0])) return { name: '', address: lines.join('\n') };
+                return { name: lines[0] || '', address: lines.slice(1).join('\n') || '' };
             },
             copyTableToClipboard() {
                 if (App.state.allRecords.length === 0) return alert("Table is empty.");

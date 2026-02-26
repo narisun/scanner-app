@@ -14,7 +14,7 @@
             max-width: 800px;
             margin: 20px auto;
             background: #fff;
-            padding: 25px;
+            padding: 25px 40px;
             border-radius: 8px;
             box-shadow: var(--shadow);
         }
@@ -37,6 +37,14 @@
         a.back-link:hover {
             text-decoration: underline;
         }
+        .guide-image {
+            width: 100%;
+            max-width: 450px;
+            border-radius: 8px;
+            border: 1px solid var(--medium-gray);
+            margin: 15px auto;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -47,8 +55,11 @@
 
         <h2>Getting Started</h2>
         <ol>
-            <li><strong>Open the App:</strong> When you open the QR Code Mapper, you'll see a clean and simple interface.</li>
-            <li><strong>Start a New Record:</strong> To begin, tap the <strong>"➕ Start New Record"</strong> button. This will open the scanner.</li>
+            <li><strong>Open the App:</strong> When you open the app, you'll see the main screen.</li>
+            <img src="images/application-startup.jpg" alt="Main screen of the QR Code Mapper app" class="guide-image">
+            <li><strong>Start a New Record:</strong> To begin, tap the <strong>"➕ Start New Record"</strong> button.</li>
+            <li><strong>Allow Camera Access:</strong> The first time you start a record, your device will ask for permission to use the camera. Please tap <strong>"Allow"</strong> to continue.</li>
+             <img src="images/camera-permission-alert.jpg" alt="Camera permission prompt" class="guide-image">
         </ol>
 
         <h2>Scanning the Address</h2>
@@ -58,6 +69,7 @@
         <ul>
             <li><strong>Position the Label:</strong> Place the shipping label on a flat, well-lit surface. Avoid shadows and glare on the address portion of the label.</li>
             <li><strong>Align the Camera:</strong> Hold your phone steady and position the camera so the name and address on the label are inside the dashed rectangle (the overlay) on your screen.</li>
+            <img src="images/scanning-address.jpg" alt="Scanning an address with the overlay" class="guide-image">
             <li><strong>Focus on the Text:</strong> The app is constantly checking the clarity of the image.
                 <ul>
                     <li>When the overlay border is <strong>red</strong>, it means the text is blurry. Try moving your phone slightly closer or further away from the label to find the best focus distance.</li>
@@ -67,13 +79,14 @@
         </ul>
 
         <h3>What happens if the scan is not clear?</h3>
-        <p>Sometimes, due to lighting, print quality, or an unsteady hand, the app might not be confident about the scanned text. If this happens, you will see a <strong>"Low Scan Quality"</strong> message.</p>
+        <p>Sometimes, due to lighting or print quality, the app might not be confident about the scanned text. If this happens, you will see a <strong>"Low Scan Quality"</strong> message.</p>
+        <img src="images/lowscanquality-window.jpg" alt="Low scan quality prompt with retry option" class="guide-image">
         <ul>
             <li>You will be shown a preview of the text that the app was able to read.</li>
             <li>You have two options:
                 <ul>
-                    <li><strong>Retry:</strong> It's highly recommended to tap the <strong>"Retry"</strong> button. This will take you back to the scanner so you can try again to get a clearer picture.</li>
-                    <li><strong>Accept & Continue:</strong> If the preview looks mostly correct and you're confident you can fix it manually later, you can tap <strong>"Accept & Continue"</strong>.</li>
+                    <li><strong>Retry:</strong> It's highly recommended to tap the <strong>"Retry"</strong> button. This will take you back to the scanner so you can try again for a clearer picture.</li>
+                    <li><strong>Accept & Continue:</strong> If the preview looks mostly correct and you can fix it manually later, you can tap <strong>"Accept & Continue"</strong>.</li>
                 </ul>
             </li>
         </ul>
@@ -82,6 +95,7 @@
         <h2>Scanning the QR Code</h2>
         <ol>
             <li><strong>Align the QR Code:</strong> After a successful address scan, the app will prompt you to scan the QR code. Position your camera so the QR code is within the dashed overlay.</li>
+            <img src="images/scanning-qrcode.jpg" alt="Scanning a QR code" class="guide-image">
             <li><strong>Automatic Capture:</strong> The app will automatically detect and capture the QR code.</li>
         </ol>
 
@@ -89,12 +103,14 @@
         <ol>
             <li><strong>Review the Information:</strong> The app will show you the captured QR code URL and the address.</li>
             <li><strong>Correct if Needed:</strong> You can edit the text in the "Name & Address" box to make any corrections.</li>
+            <img src="images/validate-correct.jpg" alt="Validation screen to correct text" class="guide-image">
             <li><strong>Save the Record:</strong> Once you are happy with the information, tap the <strong>"Save Record"</strong> button.</li>
         </ol>
 
         <h2>Managing Your Records</h2>
         <ul>
             <li>All your saved records will appear in a table on the main screen.</li>
+            <img src="images/saved-records-table.jpg" alt="A completed record in the table" class="guide-image">
             <li><strong>Copy Table:</strong> You can copy the entire table to your clipboard by tapping the <strong>"Copy Table"</strong> button.</li>
             <li><strong>Delete a Record:</strong> To delete a single entry, tap the trash can icon (🗑️) in that record's row.</li>
             <li><strong>Delete All:</strong> To clear all records, click the small <strong>"Delete All"</strong> link at the bottom-right of the table.</li>

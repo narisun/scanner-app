@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: scanner_user
+      POSTGRES_PASSWORD: secretpassword
+      POSTGRES_DB: scanner_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Automatically runs init.sql on the first startup
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scanner_user -d scanner_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # Connects to the 'db' service defined above
+      DATABASE_URL: postgresql://scanner_user:secretpassword@db:5432/scanner_db
+      JWT_SECRET: dev_super_secret_jwt_key
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

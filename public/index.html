@@ -1,18 +1,44 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>QR Code Mapper</title>
+    <title>MAF Fulfillment App</title>
+    <link rel="icon" href="/images/favicon-32x32-1.png" type="image/x-icon">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <div id="main-container">
-        <h1>QR Code Mapper</h1>
+    <div id="login-container" class="login-wrapper">
+        <div class="login-box">
+            <img src="/images/maf-touch-icon.png" alt="MAF Logo" class="maf-logo" onerror="this.style.display='none'">
+            <h2>MAF Fulfillment App</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="hidden" style="color: var(--danger-color); margin-top: 10px;"></p>
+                <div class="login-action">
+                    <button type="submit" id="login-btn">Secure Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="main-container" class="hidden">
+        <h1>MAF Fulfillment App</h1>
         <div class="main-controls">
-            <button id="start-new-record-button">➕ Start New Record</button>
-            <a href="user-guide.html" style="margin-top: 10px;">User Guide</a>
+            <button id="start-new-record-button" disabled>Loading Engine...</button>
+            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <a href="user-guide.html">User Guide</a>
+                <a href="#" id="logout-link" style="color: var(--danger-color);">Logout</a>
+            </div>
         </div>
 
         <div id="data-section">
@@ -20,10 +46,11 @@
                 <table id="data-table">
                     <thead>
                         <tr>
+                            <th>QR Image</th>
+                            <th>Combined Address</th>
                             <th>QR URL</th>
-                            <th>Name & Address</th>
-                            <th>Image</th>
-                            <th></th> </tr>
+                            <th>Actions</th>
+                        </tr>
                     </thead>
                     <tbody></tbody>
                 </table>
@@ -35,7 +62,7 @@
         </div>
     </div>
 
-    <div id="capture-modal" class="hidden" role="dialog" aria-modal="true">
+    <div id="capture-modal" class="hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
         <div class="modal-content">
             <div id="scanner-view">
                 <div id="video-wrapper">
@@ -43,7 +70,7 @@
                     <canvas id="frame-canvas" class="hidden"></canvas>
                     <div id="overlay"></div>
                 </div>
-                <p id="status-message">Starting camera...</p>
+                <p id="status-message" aria-live="polite">Starting camera...</p>
                 <div id="loader" class="hidden">
                     <div class="spinner"></div>
                     <p>Processing...</p>
@@ -55,11 +82,11 @@
             </div>
 
             <div id="validation-view" class="hidden">
-                <h3>Validate and Correct</h3>
+                <h3 id="modal-title">Validate and Correct</h3>
                 <label for="qr-url">QR Code URL:</label>
                 <input type="text" id="qr-url" name="qr-url">
 
-                <label for="name-address">Name & Address:</label>
+                <label for="name-address">Combined Address:</label>
                 <textarea id="name-address" name="name-address" rows="4"></textarea>
 
                 <div class="modal-buttons">
@@ -69,7 +96,7 @@
         </div>
     </div>
 
-    <div id="confidence-modal" class="hidden">
+    <div id="confidence-modal" class="hidden" role="dialog" aria-modal="true">
         <div class="modal-content">
             <h3 id="confidence-title">Low Scan Quality</h3>
             <p>The extracted text has a low confidence score. You can accept it and correct it later, or retry for a better scan.</p>
@@ -86,8 +113,6 @@
     
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js'></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
-    
     <script src="js/app.js"></script>
-
 </body>
 </html>

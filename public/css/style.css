@@ -52,6 +52,7 @@ button.secondary-btn:hover { background-color: var(--secondary-hover); }
     text-decoration: underline;
 }
 
+
 /* Table Styles */
 #data-section { margin-top: 20px; }
 #table-wrapper { overflow-x: auto; }
@@ -84,3 +85,71 @@ button.secondary-btn:hover { background-color: var(--secondary-hover); }
 #loader { text-align: center; margin: 15px; }
 .spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--primary-color); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 10px auto; }
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+/* --- Login Screen Styles --- */
+
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Use 100vh to ensure it is centered vertically on the entire screen */
+    height: 100vh; 
+    background-color: var(--light-gray);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 2000;
+}
+
+.login-box {
+    background: #fff;
+    padding: 40px 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    width: 100%;
+    max-width: 380px;
+    text-align: center; /* Centers the logo and heading */
+}
+
+.maf-logo {
+    max-width: 180px;
+    margin-bottom: 15px;
+}
+
+.login-box h2 {
+    margin-top: 0;
+    margin-bottom: 25px;
+    color: #005a9c;
+    font-size: 1.5rem;
+}
+
+/* Align labels and inputs back to the left inside the centered box */
+.login-box .form-group {
+    text-align: left; 
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.login-action {
+    margin-top: 25px;
+}
+
+#login-btn {
+    width: auto; /* Reverts full-width stretch */
+    padding: 10px 35px;
+    font-size: 1.1rem;
+}
+
