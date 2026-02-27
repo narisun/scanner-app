@@ -2,9 +2,9 @@
   "name": "scanner-app",
   "version": "1.0.0",
   "description": "QR Code Mapper with Postgres",
-  "main": "server.js",
+  "main": "server/index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server/index.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
